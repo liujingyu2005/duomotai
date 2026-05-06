@@ -1,0 +1,62 @@
+/* 答辩分析新增字段样式优化 */
+.improvement-phase {
+    margin-bottom: 1.5rem;
+    padding-left: 0.5rem;
+    border-left: 3px solid var(--accent);
+}
+
+.improvement-phase > strong {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.improvement-phase ul {
+    margin: 0;
+    padding-left: 1.2rem;
+    list-style-type: disc;
+}
+
+.improvement-phase li {
+    margin-bottom: 0.3rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* checkbox 风格对齐 */
+.defense-content ul:has(input[type="checkbox"]) {
+    list-style: none;
+    padding-left: 0;
+}
+
+.defense-content input[type="checkbox"] {
+    margin-right: 0.5rem;
+    accent-color: var(--accent);
+}
+
+.defense-content li:has(input[type="checkbox"]) {
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+/* 通用内联列表样式 */
+.defense-content p {
+    margin-bottom: 0.8rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.defense-content strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* 新增卡片标题对齐 */
+.defense-card h3 {
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    color: var(--text-primary);
+}

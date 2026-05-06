@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基于多模态的AI教学互助式智能体</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/frontend-refine.css">
+    <link rel="stylesheet" href="/static/frontend-refine-2.css">
+    <link rel="stylesheet" href="/static/frontend-refine-3.css">
+</head>
+<body>
+    <div class="app-background"></div>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="brand-block">
+                    <span class="brand-mark">AI</span>
+                    <div>
+                        <p class="brand-eyebrow">AI Teaching Copilot</p>
+                        <h1>AI教学助手</h1>
+                        <p class="brand-subtitle">面向课程学习、练习讲解与答辩模拟的一体化教学智能体</p>
+                    </div>
+                </div>
+                <div class="sidebar-hero card-glow">
+                    <div>
+                        <span class="hero-chip">多模态学习助手</span>
+                        <strong>更像现代 AI 产品的交互体验</strong>
+                        <p>支持文本提问、题图解析、答辩模拟与结构化学习辅导。</p>
+                    </div>
+                    <button id="newChatBtn" class="primary-btn" type="button">开始新对话</button>
+                </div>
+            </div>
+
+            <section class="panel glass-panel">
+                <div class="panel-title-row compact">
+                    <div>
+                        <h2>模型与模式</h2>
+                        <p class="panel-caption">切换模型、教学场景与本地 API 配置</p>
+                    </div>
+                    <span class="panel-badge">本地安全</span>
+                </div>
+                <label class="field-label" for="modelSelect">模型选择</label>
+                <select id="modelSelect" class="field-control">
+                    <option value="deepseek">DeepSeek</option>
+                    <option value="zhipu">智谱 GLM</option>
+                    <option value="tyqw">通义千问</option>
+                </select>
+
+                <label class="field-label" for="sceneModeSelect">教学模式</label>
+                <select id="sceneModeSelect" class="field-control">
+                    <option value="default">通用答疑</option>
+                    <option value="lecture">讲解模式</option>
+                    <option value="practice">练习模式</option>
+                    <option value="defense">答辩模式</option>
+                </select>
+
+                <label class="field-label" for="apiKeyInput">API Key</label>
+                <input id="apiKeyInput" class="field-control" type="password" placeholder="仅保存在当前浏览器本地">
+                <p id="apiKeyStatus" class="helper-text">正在检查默认 API 配置状态...</p>
+                <div class="config-actions">
+                    <button id="saveConfigBtn" class="secondary-btn" type="button">保存自定义 API</button>
+                    <button id="clearApiKeyBtn" class="ghost-btn" type="button">清除自定义 API</button>
+                </div>
+                <p class="helper-text">优先使用浏览器本地自定义 API；如果未填写，则自动回退到本机默认 API 配置。</p>
+            </section>
+
+            <section class="panel session-panel glass-panel">
+                <div class="panel-title-row">
+                    <div>
+                        <h2>学习会话</h2>
+                        <p class="panel-caption">保留历史提问与教学记录，支持继续追问</p>
+                    </div>
+                    <button id="refreshChatsBtn" class="ghost-btn" type="button">刷新</button>
+                </div>
+                <div id="chatList" class="chat-list"></div>
+            </section>
+        </aside>
+
+        <main class="main-panel">
+            <header class="chat-header glass-panel">
+                <div class="chat-header-title-block">
+                    <div class="chat-header-main">
+                        <span class="section-kicker">智能教学工作台</span>
+                        <h2 id="chatTitle">新对话</h2>
+                        <p id="chatMeta" class="chat-meta">准备开始提问</p>
+                    </div>
+                    <div class="chat-header-badges">
+                        <span id="activeModelBadge" class="header-badge">DeepSeek</span>
+                        <span id="activeModeBadge" class="header-badge subtle">通用答疑</span>
+                    </div>
+                </div>
+                <div class="chat-header-actions">
+                    <button id="renameChatBtn" class="ghost-btn compact-btn" type="button">重命名</button>
+                    <button id="deleteChatBtn" class="danger-btn compact-btn" type="button">删除</button>
+                </div>
+            </header>
+            <section id="defensePanel" class="panel defense-panel glass-panel hidden" aria-live="polite">
+                <div class="panel-title-row">
+                    <div>
+                        <h2>课程答辩辅助</h2>
+                        <p class="helper-text">适用于开题、课程设计、项目汇报与答辩彩排。</p>
+                    </div>
+                    <button id="generateDefenseAnalysisBtn" class="secondary-btn" type="button">生成答辩分析</button>
+                </div>
+                <div class="defense-actions">
+                    <button class="quick-prompt defense-chip" type="button" data-defense-action="opening">生成 1 分钟开场陈述</button>
+                    <button class="quick-prompt defense-chip" type="button" data-defense-action="summary">提炼项目摘要</button>
+                    <button class="quick-prompt defense-chip" type="button" data-defense-action="questions">生成高频追问</button>
+                    <button class="quick-prompt defense-chip" type="button" data-defense-action="improvements">生成改进建议</button>
+                </div>
+                <div class="defense-grid">
+                    <section class="defense-card">
+                        <h3>答辩总评</h3>
+                        <div id="defenseOverall" class="defense-content"></div>
+                    </section>
+                    <section class="defense-card">
+                        <h3>开场陈述</h3>
+                        <div id="defenseOpening" class="defense-content">切换到答辩模式后，点击“生成答辩分析”。</div>
+                    </section>
+                    <section class="defense-card">
+                        <h3>评分维度</h3>
+                        <div id="defenseScores" class="defense-content"></div>
+                    </section>
+                    <section class="defense-card">
+                        <h3>老师追问树</h3>
+                        <div id="defenseFollowups" class="defense-content"></div>
+                    </section>
+                    <section class="defense-card">
+                        <h3>汇报框架</h3>
+                        <div id="defenseOutline" class="defense-content"></div>
+                    </section>
+                    <section class="defense-card">
+                        <h3>教学价值</h3>
+                        <div id="defenseTeachingValue" class="defense-content"></div>
+                    </section>
+                    <section class="defense-card">
+                        <h3>答辩策略</h3>
+                        <div id="defenseStrategy" class="defense-content"></div>
+                    </section>
+                    <section class="defense-card full-span">
+                        <h3>改进计划</h3>
+                        <div id="defenseImprovementPlan" class="defense-content"></div>
+                    </section>
+                    <section class="defense-card full-span">
+                        <h3>演示脚本</h3>
+                        <div id="defenseDemoScript" class="defense-content"></div>
+                    </section>
+                    <section class="defense-card full-span">
+                        <h3>答辩清单</h3>
+                        <div id="defenseQAChecklist" class="defense-content"></div>
+                    </section>
+                    <section class="defense-card full-span">
+                        <h3>标准回答模板</h3>
+                        <div id="defenseTemplates" class="defense-content"></div>
+                    </section>
+                    <section class="defense-card full-span">
+                        <h3>改进建议</h3>
+                        <div id="defenseSuggestions" class="defense-content"></div>
+                    </section>
+                </div>
+            </section>
+            <section id="messages" class="messages" aria-live="polite">
+                <div id="welcomePanel" class="welcome-panel">
+                    <div class="welcome-orb"></div>
+                    <div class="welcome-copy">
+                        <span class="welcome-badge">沉浸式 AI 学习体验</span>
+                        <h3>今天想把哪个学习问题，交给 AI 教学助手？</h3>
+                        <p>你可以把它当成一位会讲课、会拆题、会追问、也会帮你准备答辩的智能助教。</p>
+                    </div>
+                    <div class="welcome-stats">
+                        <div class="stat-card">
+                            <strong>3+</strong>
+                            <span>教学模式</span>
+                        </div>
+                        <div class="stat-card">
+                            <strong>多模型</strong>
+                            <span>支持切换</span>
+                        </div>
+                        <div class="stat-card">
+                            <strong>图文问答</strong>
+                            <span>多模态输入</span>
+                        </div>
+                    </div>
+                    <div class="capability-grid">
+                        <button class="capability-card" type="button" data-prompt="请用老师讲课的方式，分步骤讲解这个知识点，并给一个简单例子。" data-scene-mode="lecture">
+                            <strong>知识点讲解</strong>
+                            <span>概念、原理、例题一步步解释</span>
+                        </button>
+                        <button class="capability-card" type="button" data-prompt="请按审题、思路、步骤、答案、易错点的结构解析这道题。" data-scene-mode="practice">
+                            <strong>题目解析</strong>
+                            <span>适合数学、算法、编程与理论题</span>
+                        </button>
+                        <button class="capability-card" type="button" data-prompt="请模拟答辩老师，围绕我的课题连续提问，并给出改进建议。" data-scene-mode="defense" data-prompt-action="new-chat">
+                            <strong>答辩模拟</strong>
+                            <span>生成追问、评价与优化建议</span>
+                        </button>
+                        <button class="capability-card" type="button" data-prompt="请根据我的薄弱点生成 3 道循序渐进的练习题，并附简要提示。" data-scene-mode="practice">
+                            <strong>练习生成</strong>
+                            <span>分层训练，适合自测与课堂互助</span>
+                        </button>
+                    </div>
+                    <div class="quick-prompts">
+                        <button class="quick-prompt" type="button" data-prompt="请把这个知识点讲得像给大一新生上课一样。" data-scene-mode="lecture">像老师一样讲解</button>
+                        <button class="quick-prompt" type="button" data-prompt="请先给结论，再解释原因，最后总结常见误区。" data-scene-mode="default">结论 + 原因 + 误区</button>
+                        <button class="quick-prompt" type="button" data-prompt="请模拟课程答辩，先问我 5 个核心问题。" data-scene-mode="defense" data-prompt-action="new-chat">开始课程答辩模拟</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="composer floating-composer glass-panel">
+                <div id="imagePreview" class="image-preview hidden"></div>
+                <div class="composer-topline">
+                    <span class="composer-title">开始一轮更高质量的学习对话</span>
+                    <span class="composer-tip">支持文本输入、图片上传与答辩提示词注入</span>
+                </div>
+                <textarea id="messageInput" rows="4" maxlength="4000" placeholder="输入课程问题、知识点疑问、代码问题，或让 AI 帮你做答辩模拟..."></textarea>
+                <div class="composer-actions">
+                    <div class="composer-tools">
+                        <label class="upload-btn" for="imageInput">上传题目图片</label>
+                        <input id="imageInput" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+                        <button id="insertDefensePromptBtn" class="ghost-btn" type="button">插入答辩提示</button>
+                        <button id="clearInputBtn" class="ghost-btn" type="button">清空输入</button>
+                    </div>
+                    <div class="composer-submit">
+                        <span id="statusText" class="status-text subtle-status">就绪</span>
+                        <button id="stopBtn" class="ghost-btn compact-btn hidden" type="button">终止</button>
+                        <button id="sendBtn" class="primary-btn send-btn" type="button">发送</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script type="module" src="/static/app.js"></script>
+</body>
+</html>
